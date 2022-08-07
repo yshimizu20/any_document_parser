@@ -1,5 +1,7 @@
 import sys
 import os
+import csv
+from datetime import datetime
 
 
 class SearchAlgorithm:
@@ -8,42 +10,78 @@ class SearchAlgorithm:
         input
         kw_str: str
         restrictions: dict
-            startDate, endDate: str
+            createStartDate, createEndDate: str
+            modifyStartDate, modifyEndDate: str
             publishedBy: str
             accessLevel: int (who has access)
             documentType: list (pdf, png, docx etc.)
         """
-        self.kw_str = kw_str.lower() # used for raw search
-        self.kw_lst = self.kw_str.split() # used for fast search
-        self.kw_must_include = [] # index of must_include words
-        self.restrictions = restrictions # dict of restrictions e.g. time, published_by
+        self.kw_str = kw_str.lower()  # used for raw search
+        self.kw_lst = self.kw_str.replace(
+            '"', "").split()  # used for fast search
+        self.kw_must_include = []  # index of must_include words
+        self.restrictions = restrictions  # dict of restrictions e.g. time, published_by
+        self.files = self.filter_files()
 
         parsed_lst = self.kw_str.split('"')
         for i in range(1, len(parsed_lst), 2):
             self.kw_must_include.append(parsed_lst[i])
 
+    def filter_files(self):
+        FILENAME = "samples/filepaths.csv"
+
+        with open(FILENAME, "r") as f:
+            files = [line for line in csv.DictReader(f)]
+
+        if "documentType" in self.restrictions:
+            files = [file for file in files if file.endswith(
+                '.' + self.restrictions["documentType"])]
+
+        if "createStartDate" in self.restrictions:
+            dt = datetime.strptime(
+                self.restrictions["createStartDate"], "%Y-%m-%d")
+            files = [file for file in files if datetime.strptime(
+                file["date_cre"], "%Y-%m-%d") >= dt]
+
+        if "createEndDate" in self.restrictions:
+            dt = datetime.strptime(
+                self.restrictions["createEndDate"], "%Y-%m-%d")
+            files = [file for file in files if datetime.strptime(
+                file["date_cre"], "%Y-%m-%d") <= dt]
+
+        if "modifyStartDate" in self.restrictions:
+            dt = datetime.strptime(
+                self.restrictions["modifyStartDate"], "%Y-%m-%d")
+            files = [file for file in files if datetime.strptime(
+                file["date_mod"], "%Y-%m-%d") >= dt]
+
+        if "modifyEndDate" in self.restrictions:
+            dt = datetime.strptime(
+                self.restrictions["modifyEndDate"], "%Y-%m-%d")
+            files = [file for file in files if datetime.strptime(
+                file["date_mod"], "%Y-%m-%d") <= dt]
+
+        return files
+
     def search(self):
         result_title = self.search_title()
-        result_fast = self.search_fast()
+        result_vectors = self.search_vectors()
         result_raw = self.search_raw()
 
     def search_title(self):
-        SAMPLE_DIR = "samples/"
-        q = [SAMPLE_DIR]
         results = []
 
-        while q:
-            d = q.pop()
-            currdir, nextdir, filedirs = next(os.walk("d"))
-            for dname in nextdir:
-                q.append(d + dname)
-            for filename in filedirs:
-                for kw in self.kw_lst:
-                    if kw in ''.join(filename.split('.')[:-1]):
-                        score += 1
-                results.append((d + filename, score,))
+        for file in self.files:
+            score = 0
+            for kw in self.kw_lst:
+                if kw in file["filepath"]:
+                    score += 1
+            if score:
+                results.append([file["filepath"], score])
+        
+        return results # not sorted
 
-    def search_fast(self):
+    def search_vectors(self):
         pass
 
     def search_raw(self):
@@ -64,7 +102,7 @@ class SearchAlgorithm:
             if score_must or score:
                 results.append(((score_must, score,), filepath,))
 
-        return results # not sorted
+        return results  # not sorted
 
 
 if __name__ == "__main__":
@@ -72,4 +110,4 @@ if __name__ == "__main__":
     print(st.split('"'))
 
     s = SearchAlgorithm(st)
-    s.search()
+    s.search_title()

@@ -1,0 +1,6 @@
+filepath,time_mod,time_cre,doctype,scraped_extracted,scraped_plain
+samples/filepaths.csv,2022-08-07,2022-08-07,csv,,
+samples/sample.png,2022-07-31,2022-07-31,png,,
+samples/extracted/test1.txt,2022-08-07,2022-08-07,txt,,
+samples/Line/写真等の撮影及び掲載にかかる承諾書.pdf,2022-07-05,2022-08-07,pdf,,
+samples/Line/ソースコード取り扱い誓約書.pdf,2022-07-05,2022-08-07,pdf,,
