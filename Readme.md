@@ -6,7 +6,7 @@ Members: Edward & Yukoh
 Code Structure
 
 oriental
-|_ frontend
-|_ backend
-    |_ lambda_infra (infra code)
-    |_ src (python source code)
+|_ frontend <br />
+|_ backend <br />
+    |_ lambda_infra (infra code) <br />
+    |_ src (python source code) <br />
