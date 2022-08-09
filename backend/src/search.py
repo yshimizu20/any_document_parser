@@ -2,6 +2,8 @@ import sys
 import os
 import csv
 from datetime import datetime
+# from multiprocessing import Pool, Process, Pipe
+import bisect
 
 
 class SearchAlgorithm:
@@ -63,13 +65,47 @@ class SearchAlgorithm:
 
         return files
 
+    def get_top_search_results(self, results, display_num = 10):
+        """
+        returns top dispaly_num scores of the results
+
+        input
+        results: list of tuples (filepath, score)
+        display_start: int
+        display_num: int
+        """
+        
+        res = []
+        n_res = 0
+        min_res = -1
+
+        for result in results:
+            if result[1]:
+                if n_res == display_num:
+                    if result[1] < min_res:
+                        continue
+                    else:
+                        bisect.insort(res, result, key=lambda x: x[1])
+                        res.pop()
+                        min_res = res[-1][1]
+                else:
+                    bisect.insort(res, result, key=lambda x: x[1])
+                    n_res += 1
+                    min_res = res[-1][1]
+
+        return res
+
+
     def search(self):
         result_title = self.search_title()
         result_vectors = self.search_vectors()
         result_raw = self.search_raw()
 
+        return result_title, result_vectors, result_raw
+
     def search_title(self):
         results = []
+        count = 0
 
         for file in self.files:
             score = 0
@@ -77,7 +113,8 @@ class SearchAlgorithm:
                 if kw in file["filepath"]:
                     score += 1
             if score:
-                results.append([file["filepath"], score])
+                results.append([file["filepath"], score, count])
+                count += 1
         
         return results # not sorted
 
@@ -86,6 +123,7 @@ class SearchAlgorithm:
 
     def search_raw(self):
         results = []
+        count = 0
 
         EXTRACTED_DIR = "samples/extracted/"
         for filepath in os.listdir(EXTRACTED_DIR):
@@ -100,7 +138,8 @@ class SearchAlgorithm:
                 if kw in contents:
                     score += 1
             if score_must or score:
-                results.append(((score_must, score,), filepath,))
+                results.append([filepath, (score_must, score,), count])
+                count += 1
 
         return results  # not sorted
 
