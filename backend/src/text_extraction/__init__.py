@@ -7,6 +7,7 @@ import pandas as pd
 # Paths
 dictionary_path = "backend/src/samples/dictionary.txt"
 document_metadata_path = "backend/src/samples/extracted.csv"
+document_metadata_columns = ["tokens", "doc_name"]
 
 class Text_Extractor():
     """
@@ -16,13 +17,15 @@ class Text_Extractor():
         """
         Constructor to load tagger and dictionary.
         """
-
         self.tagger = MeCab.Tagger("-Owakati")
         self.dictionary_file = open(dictionary_path, "a+")
         self.dictionary = self.dictionary_file.read().splitlines()
-        self.document_db = pd.read_csv(document_metadata_path)
-        self.db_columns = self.document_db.columns
-
+        self.db_columns = document_metadata_columns
+        
+        if not Path(document_metadata_path).is_file():
+            self.document_db = pd.DataFrame(columns=document_metadata_columns)
+        else:
+            self.document_db = pd.read_csv(document_metadata_path)
         
     def document_tokenizer(self,
                            document,
@@ -97,3 +100,7 @@ class Text_Extractor():
                 token_vector[self.dictionary.index(token)] += 1
         
         return np.array(token_vector)
+    
+if __name__ == "__main__":
+    model = Text_Extractor()
+    print(model.db_columns)
