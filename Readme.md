@@ -1,4 +1,4 @@
-directory
+directory <br />
 |_ frontend <br />
 |_ backend <br />
     |_ lambda_infra (infra code) <br />
