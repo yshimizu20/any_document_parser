@@ -11,13 +11,12 @@ class FileDirectory:
     def __init__(self, dirpath="samples", extracted_dir="samples/extracted/"):
         self.dirpath = dirpath
         self.extracted_dir = extracted_dir
-
+        
     def scrape_title(self):
         """
         scrapes all files in the samples/ directory
         stores all file info in samples/filepaths.csv
         """
-
         q = [self.dirpath]
         self.titles = []
 
